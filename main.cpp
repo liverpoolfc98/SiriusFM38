@@ -1,18 +1,11 @@
 #include <cmath>
 #include <stdexcept>
+#include <stdio.h>
+#include <string.h>
 
-#include "DiffusionCEV.h"
-#include "DiffusionCIR.h"
-#include "DiffusionGBM.h"
-#include "DiffusionLipton.h"
-#include "DiffusionOU.h"
+#include "IRProviderConst.h"
 
 int main() {
-    siriusFM::DiffusionGBM a(1, 1);
-    siriusFM::DiffusionOU b(1, 1, 1);
-    siriusFM::DiffusionLipton c(1, 1, 1, 4);
-    siriusFM::DiffusionCEV d(1, 1, 1);
-    siriusFM::DiffusionCIR e(1, 1, 1);
+    siriusFM::IRProvider<siriusFM::IRModeE::Const> a("test.txt");
     return 0;
 }
-
