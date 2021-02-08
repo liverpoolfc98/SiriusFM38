@@ -5,7 +5,7 @@
 
 namespace siriusFM {
 
-enum class CcyE {USD, EUR, GBP, CHF, RUB, N};
+enum class CcyE {UNDEFINED = -1, USD, EUR, GBP, CHF, RUB, N};
 
 inline CcyE Str2CcyE(const char* a_ccy) {
     if (strcmp(a_ccy, "USD")) {
