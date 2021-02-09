@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <cmath>
 #include <cstring>
+#include <utility>
+#include <tuple>
 
 namespace siriusFM
 {
@@ -49,8 +51,10 @@ public:
         if (a_MaxP <= 0) {
             throw std::invalid_argument("non-positive arg a_MaxP in MCEngine1D constructor");
         }
+        memset(m_paths, 0, sizeof(m_paths));
     }
 
+    template<bool IsRN>
     inline void Simulate(time_t a_t0,
                   time_t a_T,
                   int a_tau_min,
@@ -60,11 +64,18 @@ public:
                   AProvider const* a_rateA,
                   BProvider const* a_rateB,
                   AssetClassA a_A,
-                  AssetClassB a_B,
-                  bool a_isRN);
+                  AssetClassB a_B);
+
+    std::tuple<long, long, const double*> GetPaths() const {
+        return m_L <= 0 || m_P <= 0 ? std::make_tuple(0, 0, nullptr) : std::make_tuple(m_L, m_P, m_paths);
+    } 
+
+    MCEngine1D& operator=(const MCEngine1D&) = delete;
+
+    MCEngine1D(const MCEngine1D&) = delete;
 
     ~MCEngine1D() {
-        delete (double*)[]m_paths;
+        delete []m_paths;
     }
 
 };

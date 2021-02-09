@@ -8,16 +8,16 @@
 namespace siriusFM {
 
 IRProvider<IRModeE::Const>::IRProvider(const char* a_file) {
+    memset(m_IRs, 0, sizeof(m_IRs));
+
     if (!a_file) {
-        throw std::invalid_argument("empty filename");
+        return;
     }
 
     FILE* fp;
     if (!(fp = fopen(a_file, "r"))) {
-        throw std::runtime_error("no file");
+        return;
     }
-
-    memset(m_IRs, 0, sizeof(m_IRs));
 
     char buffer[BUFFER_LENGTH];
 

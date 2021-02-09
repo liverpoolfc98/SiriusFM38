@@ -1,7 +1,10 @@
 #include <cmath>
+#include <iostream>
 #include <stdexcept>
 #include <stdio.h>
 #include <string.h>
+#include <ctime>
+#include <chrono>
 
 #include "IRProviderConst.h"
 #include "IRProvider.h"
@@ -12,21 +15,51 @@
 #include "DiffusionOU.h"
 #include "MCEngine1D.hpp"
 
-void Test() {
-    siriusFM::DiffusionGBM diffGBM(1, 1);
-    siriusFM::DiffusionCEV diffCEV(1, 1, 1);
-    siriusFM::DiffusionCIR diffCIR(1, 1, 1);
-    siriusFM::DiffusionLipton diffLipton(1, 1, 1, 5);
-    siriusFM::DiffusionOU diffOU(1, 1, 1);
-    siriusFM::IRProvider<siriusFM::IRModeE::Const> providerConst("test.txt");
-    siriusFM::MCEngine1D<siriusFM::DiffusionGBM, siriusFM::IRProvider<siriusFM::IRModeE::Const>,
-        siriusFM::IRProvider<siriusFM::IRModeE::Const>,
-        siriusFM::CcyE, siriusFM::CcyE> engine(10, 10);
-    engine.Simulate(0, 100000, 5, 1, 10, &diffGBM, &providerConst,
-        &providerConst, siriusFM::CcyE::EUR, siriusFM::CcyE::EUR, true);
+using namespace siriusFM;
+
+void TestGBM(double mu, double sigma, double s0, long T, int tauMin, int nPaths) {
+    DiffusionGBM diffGBM(mu, sigma);
+    MCEngine1D<DiffusionGBM, IRProvider<IRModeE::Const>, IRProvider<IRModeE::Const>,
+        CcyE, CcyE> engine(20000, 20000);
+    IRProvider<IRModeE::Const> providerConst(nullptr);
+    time_t t0 = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    engine.Simulate<false>(t0, t0 + T * 24 * 60 * 60, tauMin, s0, nPaths, &diffGBM,
+        &providerConst, &providerConst, CcyE::USD, CcyE::USD);
+    auto res = engine.GetPaths();
+    long L1 = std::get<0>(res), P1 = std::get<1>(res);
+    const double* paths = std::get<2>(res);
+
+    double EST = 0, EST2 = 0;
+    long samples = 0;
+
+    for (long p = 0; p < P1; ++p) {
+        if (paths[p * L1 + L1 - 1] <= 0) continue;
+        double RT = std::log(paths[p * L1 + L1 - 1] / paths[p * L1]);
+        EST += RT;
+        EST2 += RT * RT;
+        ++samples; 
+    }
+
+    assert(samples > 0);
+
+    double tYears = static_cast<double>(T) / 365.25;
+
+    double sigma2Estimated = 1. / (samples - 1) * (EST2 - EST * EST / samples) / tYears;
+
+    double muEstimated = EST / samples / tYears + sigma2Estimated / 2;
+
+    printf("mu = %f, sigma^2 = %f\n", muEstimated, sigma2Estimated);
 }
 
-int main() {
-    Test();
+int main(int argc, char **argv) {
+    if (argc != 7) {
+        std::cerr << "usage: mu sigma s0 Tdays taumin p" << std::endl;
+        return 1;
+    }
+    double mu = atof(argv[1]), sigma = atof(argv[2]), s0 = atof(argv[3]);
+    long T = atol(argv[4]);
+    int tauMin = atoi(argv[5]), nPaths = atoi(argv[6]);
+
+    TestGBM(mu, sigma, s0, T, tauMin, nPaths);
     return 0;
 }
