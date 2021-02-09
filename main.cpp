@@ -22,7 +22,8 @@ void TestGBM(double mu, double sigma, double s0, long T, int tauMin, int nPaths)
     MCEngine1D<DiffusionGBM, IRProvider<IRModeE::Const>, IRProvider<IRModeE::Const>,
         CcyE, CcyE> engine(20000, 20000);
     IRProvider<IRModeE::Const> providerConst(nullptr);
-    time_t t0 = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    // time_t t0 = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    time_t t0 = time(nullptr);
     engine.Simulate<false>(t0, t0 + T * 24 * 60 * 60, tauMin, s0, nPaths, &diffGBM,
         &providerConst, &providerConst, CcyE::USD, CcyE::USD);
     auto res = engine.GetPaths();
