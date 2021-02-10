@@ -19,6 +19,7 @@ private:
     long const m_MaxL;          // Max PathLength
     long const m_MaxP;          // Max N Paths
     double* const m_paths;
+    double* const m_ts;
     long m_L;                   // m_L <= m_MaxL
     long m_P;                   // m_P <= m_MaxP
     double m_tau;               // TimeStep as a YearFraction
@@ -35,6 +36,7 @@ public:
     m_MaxL(a_MaxL),
     m_MaxP(a_MaxP),
     m_paths(new double[a_MaxL * a_MaxP]),
+    m_ts(new double[a_MaxL]),
     m_L(0),
     m_P(0),
     m_tau(0),
@@ -58,7 +60,6 @@ public:
     inline void Simulate(time_t a_t0,
                   time_t a_T,
                   int a_tau_min,
-                  double a_s0,
                   long a_P,
                   Diffusion1D const* a_diff,
                   AProvider const* a_rateA,
@@ -66,8 +67,12 @@ public:
                   AssetClassA a_A,
                   AssetClassB a_B);
 
-    std::tuple<long, long, const double*> GetPaths() const {
-        return m_L <= 0 || m_P <= 0 ? std::make_tuple(0, 0, nullptr) : std::make_tuple(m_L, m_P, m_paths);
+    std::tuple<long, long, const double*, const double*> GetPaths() const {
+        return m_L <= 0 || m_P <= 0
+        ?
+        std::make_tuple(0, 0, nullptr, nullptr)
+        :
+        std::make_tuple(m_L, m_P, m_paths, m_ts);
     } 
 
     MCEngine1D& operator=(const MCEngine1D&) = delete;
@@ -76,6 +81,7 @@ public:
 
     ~MCEngine1D() {
         delete []m_paths;
+        delete []m_ts;
     }
 
 };

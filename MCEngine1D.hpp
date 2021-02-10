@@ -23,7 +23,6 @@ MCEngine1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Simulat
     time_t a_t0,
     time_t a_T,
     int a_tau_min,
-    double a_s0,
     long a_P,
     Diffusion1D const* a_diff,
     AProvider const* a_rateA,
@@ -44,6 +43,10 @@ MCEngine1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Simulat
         throw std::invalid_argument("too big L and P");
     }
 
+    if (L > m_MaxL) {
+        throw std::invalid_argument("too big L");
+    }
+
     std::random_device rd{};
     std::mt19937_64 u{rd()};
     std::normal_distribution<> n01{0, 1};
@@ -52,14 +55,20 @@ MCEngine1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Simulat
     double tlast = YearFrac(a_T) - YearFrac(a_t0) - tau * (L - 2);
     double slast = std::sqrt(tlast);
 
+    *m_ts = YearFrac(a_t0);
+
+    for (long l = 1; l < L; ++l) {
+        *(m_ts + l) = *(m_ts + l - 1) + (l == L - 1 ? tlast : tau);
+    }
+
     assert(tlast <= tau + EPS && tlast > 0);
 
     for (long p = 0; p < a_P; ++p) {
         double* path0 = m_paths + (p << 1) * L;
         double* path1 = path0 + L;
-        *path1 = *path0 = a_s0;
+        *path1 = *path0 = a_diff->s0();
 
-        double y = YearFrac(a_t0), sp0 = a_s0, sp1 = a_s0;
+        double y = YearFrac(a_t0), sp0 = a_diff->s0(), sp1 = a_diff->s0();
         for (long l = 1; l < L; ++l) {
             double delta = a_rateB->r(a_B, y) - a_rateA->r(a_A, y);
             double mu0 = IsRN ? delta * sp0 : a_diff->mu(sp0, y);
