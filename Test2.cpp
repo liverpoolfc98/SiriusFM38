@@ -19,14 +19,14 @@ void TestOption(double mu, double sigma, double s0, const Option* option, double
         CcyE, CcyE> engine(20000, 20000);
     IRProvider<IRModeE::Const> providerConst(nullptr);
     auto t0 = time(nullptr);
-    engine.Simulate<false>(t0, t0 + Tdays * 24 * 60 * 60, tauMin, nPaths, &diffGBM,
+    engine.Simulate<true>(t0, t0 + Tdays * 24 * 60 * 60, tauMin, nPaths, &diffGBM,
         &providerConst, &providerConst, CcyE::USD, CcyE::USD);
     auto res = engine.GetPaths();
     auto L1 = std::get<0>(res), P1 = std::get<1>(res);
     auto paths = std::get<2>(res);
     auto ts = std::get<3>(res);
 
-    double EST = 0, EST2 = 0;
+    double EST = 0;
 
     for (auto p = 0; p < P1; ++p) {
         EST += option->payoff(L1, ts, paths + p * L1); 
