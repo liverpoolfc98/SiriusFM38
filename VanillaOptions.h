@@ -1,12 +1,14 @@
 #pragma once
+
 #include "Option.h"
 
 namespace siriusFM {
 
-class EurCallOption final: public Option {
+template<class AssetClassA, class AssetClassB>
+class EurCallOption final: public Option<AssetClassA, AssetClassB> {
 public:
-    EurCallOption(double a_K, double a_Tdays)
-    : Option(a_Tdays, false), m_K(a_K) {
+    EurCallOption(double a_K, time_t a_expirTime, AssetClassA a_A, AssetClassB a_B)
+    : Option<AssetClassA, AssetClassB>(a_expirTime, false, a_A, a_B), m_K(a_K) {
         if (m_K <= 0) {
             throw std::invalid_argument("K <= 0");
         }
@@ -20,10 +22,11 @@ private:
     const double m_K;
 };
 
-class EurPutOption final: public Option {
+template<class AssetClassA, class AssetClassB>
+class EurPutOption final: public Option<AssetClassA, AssetClassB> {
 public:
-    EurPutOption(double a_K, double a_Tdays)
-    : Option(a_Tdays, false), m_K(a_K) {
+    EurPutOption(double a_K, time_t a_expirTime, AssetClassA a_A, AssetClassB a_B)
+    : Option<AssetClassA, AssetClassB>(a_expirTime, false, a_A, a_B), m_K(a_K) {
         if (m_K <= 0) {
             throw std::invalid_argument("K <= 0");
         }
@@ -36,5 +39,8 @@ public:
 private:
     const double m_K;
 };
+
+using EurCallOptionFX = EurCallOption<CcyE, CcyE>;
+using EurPutOptionFX = EurPutOption<CcyE, CcyE>;
 
 }

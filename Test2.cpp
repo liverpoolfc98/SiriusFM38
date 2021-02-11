@@ -9,31 +9,29 @@
 #include "IRProviderConst.h"
 #include "MCEngine1D.hpp"
 #include "VanillaOptions.h"
+#include "MCOptionPricer.hpp"
+
+
 
 using namespace siriusFM;
 
-void TestOption(double mu, double sigma, double s0, const Option* option, double K,
+void TestOption(double mu, double sigma, double s0, Option* option, double K,
     long Tdays, int tauMin, long nPaths) {
     DiffusionGBM diffGBM(mu, sigma, s0);
     MCEngine1D<DiffusionGBM, IRProvider<IRModeE::Const>, IRProvider<IRModeE::Const>,
-        CcyE, CcyE> engine(20000, 20000);
+        CcyE, CcyE, OPPathEval> engine(20000, 20000);
     IRProvider<IRModeE::Const> providerConst(nullptr);
+    OPPathEval eval(option);
     auto t0 = time(nullptr);
-    engine.Simulate<true>(t0, t0 + Tdays * 24 * 60 * 60, tauMin, nPaths, &diffGBM,
-        &providerConst, &providerConst, CcyE::USD, CcyE::USD);
-    auto res = engine.GetPaths();
-    auto L1 = std::get<0>(res), P1 = std::get<1>(res);
-    auto paths = std::get<2>(res);
-    auto ts = std::get<3>(res);
+    engine.Simulate<true>(t0, t0 + Tdays * 24 * 60 * 60, tauMin, nPaths, false, &diffGBM,
+        &providerConst, &providerConst, CcyE::USD, CcyE::USD, &eval);
 
-    double EST = 0;
+    double price = eval.getPrice();
 
-    for (auto p = 0; p < P1; ++p) {
-        EST += option->payoff(L1, ts, paths + p * L1); 
-    }
-
-
-    printf("option value = %f\n", EST / P1);
+    printf("option price = %f\n", price);
+    double err = price != 0 ? eval.getSTD() / price : eval.getSTD();
+    printf("STD = %f\n", err);
+    printf("Max = %f min = %f\n", eval.getMax(), eval.getMin());
 }
 
 int main(int argc, char** argv) {
@@ -43,7 +41,7 @@ int main(int argc, char** argv) {
     }
     auto mu = atof(argv[1]), sigma = atof(argv[2]), s0 = atof(argv[3]);
     auto K = atol(argv[5]), Tdays = atol(argv[6]);
-    const Option* option;
+    Option* option;
     if (strcmp(argv[4], "Put") == 0) {
         option = new EurPutOption(K, Tdays);
     } else if (strcmp(argv[4], "Call") == 0) {
