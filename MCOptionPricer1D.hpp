@@ -22,7 +22,10 @@ template <class Diffusion1D,
           class AssetClassB>
 std::pair<double, double> MCOptionPricer1D
 <Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::price(
-        Option<AssetClassA, AssetClassB>* a_option, time_t a_t0, int a_tauMins, long a_P) {
+    Option<AssetClassA, AssetClassB>* a_option,
+    time_t a_t0,
+    int a_tauMins,
+    long a_P) {
 
     assert(a_option && a_tauMins > 0 && a_P > 0);
     

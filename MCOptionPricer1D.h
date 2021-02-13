@@ -25,8 +25,12 @@ public:
     m_useTime(a_useTime),
     m_mce(102271, 4096) {}
 
-    std::pair<double, double> price(Option<AssetClassA, AssetClassB>* a_option,
-    time_t a_t0, int a_tauMins, long a_P);
+    std::pair<double, double> price(
+        Option<AssetClassA, AssetClassB>* a_option,
+        time_t a_t0,
+        int a_tauMins,
+        long a_P
+    );
 
 private:
 
@@ -61,8 +65,8 @@ private:
     AProvider m_irpA;
     BProvider m_irpB;
     const Diffusion1D* m_diff;
-    MCEngine1D<Diffusion1D, AProvider, BProvider,
-        AssetClassA, AssetClassB, OPPathEval> m_mce;
+    MCEngine1D
+    <Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB, OPPathEval> m_mce;
 };
 
 }
