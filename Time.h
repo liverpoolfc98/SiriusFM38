@@ -10,3 +10,4 @@ inline double YearFrac(time_t time) {
 }
 
 }
+

@@ -23,8 +23,8 @@ public:
     virtual double payoff(long a_L, const double* a_t, const double* a_s) const = 0;
     virtual ~Option() {}
 protected:
-    const bool m_IsAmerican;
     const time_t m_expirTime;
+    const bool m_IsAmerican;
     AssetClassA m_A;
     AssetClassB m_B;
 };

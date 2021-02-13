@@ -77,6 +77,7 @@ MCEngine1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB, PathEval
     }
 
     for (long i = 0; i < PI; ++i) {
+	#pragma omp parallel for
         for (long p = 0; p < PMH; ++p) {
             double* path0 = m_paths + (p << 1) * L;
             double* path1 = path0 + L;
@@ -86,9 +87,11 @@ MCEngine1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB, PathEval
             for (long l = 1; l < L; ++l) {
                 double delta = a_rateB->r(a_B, y) - a_rateA->r(a_A, y);
                 double mu0 = IsRN ? delta * sp0 : a_diff->mu(sp0, y);
-                double mu1 = IsRN ? delta * sp1 : a_diff->mu(sp1, y);
-                
-                double inc = n01(u) * (l == L - 1 ? slast : stau);
+                double mu1 = IsRN ? delta * sp1 : a_diff->mu(sp1, y);      
+                double inc = 0;
+		#pragma omp critical
+		{inc = n01(u);}
+		inc *= l == L - 1 ? slast : stau;
                 double incTime = l == L - 1 ? tlast : tau;
 
                 sp0 = path0[l] = sp0 + mu0 * incTime + inc * a_diff->sigma(sp0, y);

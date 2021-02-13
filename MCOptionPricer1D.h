@@ -37,7 +37,7 @@ private:
     class OPPathEval {
     public:
         OPPathEval(Option<AssetClassA, AssetClassB>* a_option)
-        : m_min(HUGE_VAL), m_max(0), m_sum(0), m_sum2(0), m_P(0), m_option(a_option) {}
+        : m_option(a_option), m_min(HUGE_VAL), m_sum(0), m_sum2(0), m_max(0), m_P(0) {}
         void operator()(long a_L, long a_PM, const double* a_paths, const double* a_ts) {
             for (auto p = 0; p < a_PM; ++p) {
                 auto st = m_option->payoff(a_L, a_ts, a_paths + p * a_L);
@@ -61,10 +61,10 @@ private:
         long m_P;
     };
 
-    bool m_useTime;
     AProvider m_irpA;
     BProvider m_irpB;
     const Diffusion1D* m_diff;
+    bool m_useTime;
     MCEngine1D
     <Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB, OPPathEval> m_mce;
 };
