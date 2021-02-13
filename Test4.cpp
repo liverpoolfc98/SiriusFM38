@@ -51,9 +51,9 @@ int main(int argc, char** argv) {
     }
     auto mu = atof(argv[1]), sigma = atof(argv[2]), s0 = atof(argv[3]);
     auto K = atol(argv[5]), Tdays = atol(argv[6]);
-    bool useTime = bool(atoi(argv[10]));
-    int tauMin = atoi(argv[8]), nPaths = atoi(argv[9]);
     double deltaAcc = atof(argv[7]);
+    int tauMin = atoi(argv[8]), nPaths = atoi(argv[9]);
+    bool useTime = bool(atoi(argv[10]));
 
     auto t0 = time(nullptr);
 
@@ -104,7 +104,10 @@ int main(int argc, char** argv) {
     auto stats = hedger.SimulateHedging(option, t0, tauMin, nPaths,
         c0, deltaFunc, deltaAcc);
 
-    printf("PNL = %f\n", std::get<0>(stats));
+    printf("PnL = %f\n", std::get<0>(stats));
+    printf("err = %f\n", std::get<1>(stats));
+    printf("minPnL = %f\n", std::get<2>(stats));
+    printf("maxPnL = %f\n", std::get<3>(stats));
 
     delete option;
 

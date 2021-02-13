@@ -1,5 +1,5 @@
 CFLAGS = -lm -c -g -O3 -march=native -mtune=native -DNDEBUG
-MAIN = Test5
+MAIN = Test4
 
 a.out: $(MAIN).o IRProvider.o IRProviderConst.o
 	g++ $^ -o a.out
