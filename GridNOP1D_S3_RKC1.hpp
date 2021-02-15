@@ -81,7 +81,7 @@ void GridNOP1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Run
     auto last = m_grid + N * (M - 1);
     for (auto i = 0; i < N; ++i) {
         m_s[i] = i * h;
-        last[i] = a_option->payoff(0, m_ts + M - 1, m_s + i);
+        last[i] = a_option->payoff(1, m_ts + M - 1, m_s + i);
     }
 
     // at low bound we always have constant boundary condition
@@ -100,7 +100,7 @@ void GridNOP1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Run
 
     auto D2 = 2 * h * h;
     
-    #pragma acc parallel loop
+   //  #pragma acc kernels copyin(m_grid[0:N * M]) copyout(m_grid[0:N * M])
     for (auto j = M - 1; j >= 1; --j) {
         auto fj = m_grid + j * N;
         auto fjm1 = fj - N;
@@ -110,6 +110,8 @@ void GridNOP1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Run
         auto C1 = (rateBj - rateAj) / 2 / h;
 
         fjm1[0] = fa;
+	// #pragma acc parallel loop copyin(fj[0:N]) copyout(fjm1[0:N])
+	#pragma omp parallel for 
         for (auto i = 1; i < N - 1; ++i) {
             auto si = m_s[i];
             auto fjim1 = fj[i - 1];
@@ -121,10 +123,15 @@ void GridNOP1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Run
             fjm1[i] = fji - tau * DfDt;
         }
         // fjm1[N - 1] = isNeumann ? fjm1[N - 2] + UBC * h : UBC;
+	
+	if (a_option->IsAmerican()) {
+	    for (auto i = 0; i < N; ++i) {
+		fjm1[i] = std::max<double>(fjm1[i], a_option->payoff(1, m_ts + j, m_s + i));
+	    }   
+	}
     }
     m_i0 = round(a_s0 / h);
-    m_M = M;
-    m_N = N;
+    m_M = M, m_N = N;
 }
 
 template<class Diffusion1D,
@@ -142,10 +149,15 @@ GridNOP1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::getStats
     auto tau = m_ts[1] - m_ts[0];
     auto px = m_grid[m_i0];
 
-    double delta = (m_grid[m_i0 + m_N] - m_grid[m_i0]) / tau, gamma = 0;
+    double delta = 0, gamma = 0;
 
     if (m_i0 > 0 && m_i0 < m_N - 1) {
+	delta = (m_grid[m_i0 + 1] - m_grid[m_i0 - 1]) / 2 / h;
         gamma = (m_grid[m_i0 - 1] - 2 * m_grid[m_i0] + m_grid[m_i0 + 1]) / h / h;
+    } else if (m_i0 == 0) {
+	delta = (m_grid[m_i0 + 1] - m_grid[m_i0]) / h;
+    } else {
+	delta = (m_grid[m_i0] - m_grid[m_i0 - 1]) / h;
     }
     return std::make_tuple(px, delta, gamma);
 }
