@@ -110,8 +110,8 @@ void GridNOP1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Run
         auto C1 = (rateBj - rateAj) / 2 / h;
 
         fjm1[0] = fa;
-	// #pragma acc parallel loop copyin(fj[0:N]) copyout(fjm1[0:N])
-	#pragma omp parallel for 
+	    // #pragma acc parallel loop copyin(fj[0:N]) copyout(fjm1[0:N])
+	    #pragma omp parallel for 
         for (auto i = 1; i < N - 1; ++i) {
             auto si = m_s[i];
             auto fjim1 = fj[i - 1];
@@ -124,11 +124,11 @@ void GridNOP1D<Diffusion1D, AProvider, BProvider, AssetClassA, AssetClassB>::Run
         }
         // fjm1[N - 1] = isNeumann ? fjm1[N - 2] + UBC * h : UBC;
 	
-	if (a_option->IsAmerican()) {
-	    for (auto i = 0; i < N; ++i) {
-		fjm1[i] = std::max<double>(fjm1[i], a_option->payoff(1, m_ts + j, m_s + i));
-	    }   
-	}
+        if (a_option->IsAmerican()) {
+            for (auto i = 0; i < N; ++i) {
+                fjm1[i] = std::max<double>(fjm1[i], a_option->payoff(1, m_ts + j, m_s + i));
+            }   
+	    }
     }
     m_i0 = round(a_s0 / h);
     m_M = M, m_N = N;

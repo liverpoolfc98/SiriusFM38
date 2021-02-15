@@ -25,8 +25,7 @@ public:
     m_VS(new double[a_maxM]),
     m_i0(0),
     m_M(0),
-    m_N(0)
-     {
+    m_N(0) {
         memset(m_grid, 0, sizeof(m_grid));
         memset(m_ts, 0, sizeof(m_ts));
         memset(m_s, 0, sizeof(m_s));

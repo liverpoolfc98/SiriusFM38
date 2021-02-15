@@ -14,8 +14,8 @@
 using namespace siriusFM;
 
 int main(int argc, char** argv) {
-    if (argc != 8) {
-        std::cerr << "usage: sigma s0 put/call strike Tdays NS tauMin" << std::endl;
+    if (argc != 10) {
+        std::cerr << "usage: sigma s0 put/call strike Tdays NS tauMin file1 file2" << std::endl;
         return 1;
     }
 
@@ -28,13 +28,19 @@ int main(int argc, char** argv) {
     auto Tdays = atol(argv[5]);
     auto NS = atol(argv[6]);
     auto tauMin = atoi(argv[7]);
+    auto fileA = argv[8] ? argv[8] : nullptr;
+    auto fileB = argv[9] ? argv[9] : nullptr;
 
     OptionFX* option;
 
+    // American Asian European
+
     if (strcmp(argv[3], "Put") == 0) {
-        option = new EurPutOptionFX(K, time(nullptr) + Tdays * 24 * 60 * 60, CcyE::USD, CcyE::USD);
+        option = new PutOptionFX(K, time(nullptr) + Tdays * 24 * 60 * 60,
+            CcyE::USD, CcyE::USD, true, false, true);
     } else if (strcmp(argv[3], "Call") == 0) {
-        option = new EurCallOptionFX(K, time(nullptr) + Tdays * 24 * 60 * 60, CcyE::USD, CcyE::USD);
+        option = new CallOptionFX(K, time(nullptr) + Tdays * 24 * 60 * 60,
+            CcyE::USD, CcyE::USD, true, false, true);
     } else {
         throw std::invalid_argument("Put or Call required");
     }
