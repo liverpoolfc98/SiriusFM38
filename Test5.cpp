@@ -42,10 +42,15 @@ int main(int argc, char** argv) {
     DiffusionGBM diffGBM(0, sigma, s0);
 
     GridNOP1D<DiffusionGBM, IRProvider<IRModeE::Const>, IRProvider<IRModeE::Const>,
-        CcyE, CcyE> grid(nullptr, nullptr, 5000, 10384);
+        CcyE, CcyE> grid(nullptr, nullptr, 30000, 10384);
 
 
-    grid.RunBI(option, t0, &diffGBM, s0);
+    grid.RunBI(option, t0, &diffGBM, s0, NS, tauMin);
+
+    auto res = grid.getStats();
+
+    printf("price = %f\ngamma = %f\ndelta = %f\n",
+        std::get<0>(res), std::get<1>(res), std::get<2>(res));
 
     delete option;
 

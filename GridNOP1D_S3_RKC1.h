@@ -22,7 +22,17 @@ public:
     m_ts(new double[a_maxM]),
     m_s(new double[a_maxN]),
     m_ES(new double[a_maxM]),
-    m_VS(new double[a_maxM]) {}
+    m_VS(new double[a_maxM]),
+    m_i0(0),
+    m_M(0),
+    m_N(0)
+     {
+        memset(m_grid, 0, sizeof(m_grid));
+        memset(m_ts, 0, sizeof(m_ts));
+        memset(m_s, 0, sizeof(m_s));
+        memset(m_ES, 0, sizeof(m_ES));
+        memset(m_VS, 0, sizeof(m_VS));
+    }
 
     void RunBI(
         const Option<AssetClassA, AssetClassB>* a_option,
@@ -33,6 +43,8 @@ public:
         int a_tauMins = 30,
         double a_UBSDF = 4.5
     );
+
+    std::tuple<double, double, double> getStats() const;
 
     ~GridNOP1D() {
         delete []m_grid;
@@ -51,6 +63,9 @@ private:
     double* const m_s;
     double* const m_ES;
     double* const m_VS;
+    int m_i0;
+    long m_M;
+    long m_N;
 };
 
 
