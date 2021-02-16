@@ -15,7 +15,7 @@ using namespace siriusFM;
 
 int main(int argc, char** argv) {
     if (argc != 10) {
-        std::cerr << "usage: sigma s0 put/call strike Tdays NS tauMin file1 file2" << std::endl;
+        std::cerr << "usage: sigma s0 put/call strike Tdays IsAmerican RatesFile NS tauMin" << std::endl;
         return 1;
     }
 
@@ -26,10 +26,10 @@ int main(int argc, char** argv) {
     auto optType = argv[3];
     auto K = atol(argv[4]);
     auto Tdays = atol(argv[5]);
-    auto NS = atol(argv[6]);
-    auto tauMin = atoi(argv[7]);
-    auto fileA = argv[8] ? argv[8] : nullptr;
-    auto fileB = argv[9] ? argv[9] : nullptr;
+    auto IsAmerican = static_cast<bool>(argv[6]);
+    auto ratesFile = argv[7];
+    auto NS = atol(argv[8]);
+    auto tauMin = atoi(argv[9]);
 
     OptionFX* option;
 
@@ -37,10 +37,10 @@ int main(int argc, char** argv) {
 
     if (strcmp(argv[3], "Put") == 0) {
         option = new PutOptionFX(K, time(nullptr) + Tdays * 24 * 60 * 60,
-            CcyE::USD, CcyE::USD, true, false, true);
+            CcyE::USD, CcyE::RUB, IsAmerican, false, true);
     } else if (strcmp(argv[3], "Call") == 0) {
         option = new CallOptionFX(K, time(nullptr) + Tdays * 24 * 60 * 60,
-            CcyE::USD, CcyE::USD, true, false, true);
+            CcyE::USD, CcyE::RUB, IsAmerican, false, true);
     } else {
         throw std::invalid_argument("Put or Call required");
     }
@@ -48,10 +48,10 @@ int main(int argc, char** argv) {
     DiffusionGBM diffGBM(0, sigma, s0);
 
     GridNOP1D<DiffusionGBM, IRProvider<IRModeE::Const>, IRProvider<IRModeE::Const>,
-        CcyE, CcyE> grid(nullptr, nullptr, 30000, 10384);
+        CcyE, CcyE> grid(ratesFile, ratesFile, 130000, 3000);
 
 
-    grid.RunBI(option, t0, &diffGBM, s0, NS, tauMin);
+    grid.Run<false>(option, t0, &diffGBM, s0, NS, tauMin);
 
     auto res = grid.getStats();
 

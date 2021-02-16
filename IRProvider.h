@@ -5,25 +5,25 @@
 
 namespace siriusFM {
 
-enum class CcyE {UNDEFINED = -1, USD, EUR, GBP, CHF, RUB, N};
+enum class CcyE {UNDEFINED = -1, USD = 0, EUR = 1, GBP = 2, CHF = 3, RUB = 4, N = 5};
 
 inline CcyE Str2CcyE(const char* a_ccy) {
-    if (strcmp(a_ccy, "USD")) {
+    if (!strcmp(a_ccy, "USD")) {
         return CcyE::USD;
     }
-    if (strcmp(a_ccy, "CHF")) {
+    if (!strcmp(a_ccy, "CHF")) {
         return CcyE::CHF;
     }
-    if (strcmp(a_ccy, "EUR")) {
+    if (!strcmp(a_ccy, "EUR")) {
         return CcyE::EUR;
     }
-    if (strcmp(a_ccy, "GBP")) {
+    if (!strcmp(a_ccy, "GBP")) {
         return CcyE::GBP;
     }
-    if (strcmp(a_ccy, "RUB")) {
+    if (!strcmp(a_ccy, "RUB")) {
         return CcyE::RUB;
     }
-    if (strcmp(a_ccy, "N")) {
+    if (!strcmp(a_ccy, "N")) {
         return CcyE::N;
     }
     throw std::invalid_argument("not a currency");

@@ -33,7 +33,8 @@ public:
         memset(m_VS, 0, sizeof(m_VS));
     }
 
-    void RunBI(
+    template<bool IsForward>
+    void Run(
         const Option<AssetClassA, AssetClassB>* a_option,
         time_t a_t0,
         const Diffusion1D* a_diff,
